@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.alexpaxom.gitsearch.app.baseelements.BaseStore
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
+import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import com.alexpaxom.gitsearch.domain.interactors.search.ImmutableListUtils
@@ -26,6 +27,8 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
     private val searchInteractor: SearchInteractor = SearchInteractor(this)
 
     private val listUtils: ImmutableListUtils<RepositoryCard> = ImmutableListUtils()
+
+    private val errorsHandler: ErrorsHandler = ErrorsHandler()
 
     override fun processEvent(event: SearchEvent) {
         when (event) {
@@ -48,8 +51,7 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                     )
                 )
             }
-            //TODO сделать централизованный обработчик ошибок
-            is SearchEvent.SearchError -> Log.e("TEST", event.error)
+            is SearchEvent.SearchError -> errorsHandler.processError(event.error)
             is SearchEvent.SearchResult -> {
                 if(event.gitSearchResult.data.isEmpty()) {
                     allPageLoaded = true

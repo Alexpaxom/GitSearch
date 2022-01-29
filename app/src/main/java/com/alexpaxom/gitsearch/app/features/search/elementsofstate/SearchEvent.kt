@@ -9,5 +9,5 @@ sealed interface SearchEvent: BaseEvent {
     class LoadPage(val searchString: String, val pageNum: Int, val elementsPerPage: Int)
     class LoadNextPage(): SearchEvent
     class SearchResult(val gitSearchResult: CacheWrapper<List<RepositoryCard>>, val pageNum:Int): SearchEvent
-    class SearchError(val error: String): SearchEvent
+    class SearchError(val error: Throwable): SearchEvent
 }

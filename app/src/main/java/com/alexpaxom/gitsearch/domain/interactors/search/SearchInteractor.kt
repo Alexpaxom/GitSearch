@@ -1,6 +1,5 @@
 package com.alexpaxom.gitsearch.domain.interactors.search
 
-import android.util.Log
 import com.alexpaxom.gitsearch.R
 import com.alexpaxom.gitsearch.app.baseelements.BaseStore
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
@@ -40,14 +39,13 @@ class SearchInteractor(
                     ))
                 },
                 onError = {
-                    //throw it
-                    store.processEvent(SearchEvent.SearchError(it.localizedMessage))
+                    store.processEvent(SearchEvent.SearchError(it))
                 }
             )
             .addTo(compositeDisposable)
     }
 
-    fun setItemListType(
+    private fun setItemListType(
         cachedData: CacheWrapper<List<RepositoryCard>>
     ):
     CacheWrapper<List<RepositoryCard>> {

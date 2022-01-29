@@ -7,8 +7,10 @@ import androidx.lifecycle.ViewModel
 import com.alexpaxom.gitsearch.app.baseelements.BaseStore
 import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsEvent
 import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsState
+import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.interactors.repositoriesdetails.GetOwnerInfoInteractor
+import java.lang.Error
 
 class RepositoryDetailsViewModel: ViewModel(),
     BaseStore<RepositoryDetailsState, RepositoryDetailsEvent> {
@@ -21,10 +23,19 @@ class RepositoryDetailsViewModel: ViewModel(),
 
     private val getOwnerInfoInteractor: GetOwnerInfoInteractor = GetOwnerInfoInteractor(this)
 
+    private val errorsHandler: ErrorsHandler = ErrorsHandler()
+
 
     override fun processEvent(event: RepositoryDetailsEvent) {
         when(event) {
             is RepositoryDetailsEvent.GetRepositoryDetails -> {
+                val userId = event.repositoryInfo.owner?.id
+
+                if(userId == null) {
+                    errorsHandler.processError(Throwable("Bad owner repository id"))
+                    return
+                }
+
                 setState(
                     currentState.copy(
                         repositoryInfo = event.repositoryInfo,
@@ -34,13 +45,17 @@ class RepositoryDetailsViewModel: ViewModel(),
 
                 getOwnerInfoInteractor.getUserInfo(
                     RepositoryDetailsEvent.GetRepositoryOwnerDetails(
-                        event.repositoryInfo.owner?.id ?: error("Bad owner repository id")
+                        userId
                     )
                 )
             }
-            //TODO Сделать централизованную обработку ошибок
-            is RepositoryDetailsEvent.GetInformationError -> { Log.e("TEST", event.error.localizedMessage) }
-            is RepositoryDetailsEvent.GetRepositoryOwnerDetails -> { error("Bad event in Store") }
+
+            is RepositoryDetailsEvent.GetInformationError ->
+                errorsHandler.processError(event.error)
+
+            is RepositoryDetailsEvent.GetRepositoryOwnerDetails ->
+                errorsHandler.processError(Throwable("Bad event in Store"))
+
             is RepositoryDetailsEvent.ResultRepositoryOwnerDetails -> {
                 setState(
                     currentState.copy(
