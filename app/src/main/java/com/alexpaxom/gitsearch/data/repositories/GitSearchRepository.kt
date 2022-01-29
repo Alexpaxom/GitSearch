@@ -32,6 +32,7 @@ class GitSearchRepository
     private val gitHubApiRequests: GitHubApiRequests = retrofit.create(GitHubApiRequests::class.java)
 
     private val repositoryDao = SingletonDatabase.cacheDatabase.repositoriesDao()
+    private val usersDao = SingletonDatabase.cacheDatabase.usersDao()
 
     fun searchRepositories(
         searchString:String,
@@ -65,6 +66,7 @@ class GitSearchRepository
 
                 if(refreshCache) {
                     repositoryDao.deleteAll()
+                    usersDao.deleteAll()
                 }
                 // Сохраняем все результаты в БД для кеша
                 repositoryDao.insertAll(apiRepositories)

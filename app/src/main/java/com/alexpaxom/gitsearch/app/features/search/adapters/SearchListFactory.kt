@@ -7,7 +7,9 @@ import com.alexpaxom.gitsearch.databinding.RwElemRepositoryInfoBinding
 import com.alexpaxom.homework_2.app.features.baseelements.adapters.BaseHolderFactory
 import com.alexpaxom.homework_2.app.features.baseelements.adapters.BaseViewHolder
 
-class SearchListFactory: BaseHolderFactory() {
+class SearchListFactory(
+    private val onRepositoryClick: (position: Int) -> Unit
+): BaseHolderFactory() {
     override fun createViewHolder(viewGroup: ViewGroup, viewType: Int): BaseViewHolder<*> {
         return when(viewType) {
             R.layout.rw_elem_repository_info -> RepositoryCardViewHolder(
@@ -15,7 +17,8 @@ class SearchListFactory: BaseHolderFactory() {
                     LayoutInflater.from(viewGroup.context),
                     viewGroup,
                     false
-                )
+                ),
+                onRepositoryClick
             )
             else -> error("Bad type search list adapter holder!")
         }

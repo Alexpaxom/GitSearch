@@ -10,6 +10,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.alexpaxom.gitsearch.R
+import com.alexpaxom.gitsearch.app.features.repositorydetails.fragments.RepositoryDetailsFragment
 import com.alexpaxom.gitsearch.app.features.search.adapters.SearchListAdapter
 import com.alexpaxom.gitsearch.app.features.search.adapters.SearchListFactory
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
@@ -17,13 +19,14 @@ import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.features.search.viewmodel.SearchFragmentViewModel
 import com.alexpaxom.gitsearch.databinding.FragmentSearchBinding
 import com.alexpaxom.homework_2.app.features.baseelements.adapters.PagingRecyclerUtil
+import java.text.FieldPosition
 
 class SearchFragment : Fragment() {
 
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
 
-    private val searchListFactory: SearchListFactory = SearchListFactory()
+    private val searchListFactory: SearchListFactory = SearchListFactory { onItemClick(it) }
     private val searchListAdapter: SearchListAdapter = SearchListAdapter(searchListFactory)
     private val searchFragmentViewModel = lazy {
         ViewModelProvider(this).get(SearchFragmentViewModel::class.java)
@@ -46,7 +49,7 @@ class SearchFragment : Fragment() {
         searchPaging.value
 
         searchFragmentViewModel.value.viewState.observe(
-            getViewLifecycleOwner(),
+            viewLifecycleOwner,
             { redrawState(it) }
         )
 
@@ -65,13 +68,27 @@ class SearchFragment : Fragment() {
         binding.loadNextPageProgress.isVisible = state.isNextPageLoading
     }
 
+    private fun onItemClick(position: Int) {
+        val repositoryDetailsFragment =
+            RepositoryDetailsFragment.newInstance(searchListAdapter.dataList[position])
+
+        parentFragmentManager.beginTransaction()
+            .replace(
+                R.id.main_fragment_container,
+                repositoryDetailsFragment,
+                RepositoryDetailsFragment.FRAGMENT_ID
+            )
+            .addToBackStack(RepositoryDetailsFragment.FRAGMENT_ID)
+            .commit()
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
-    inner class SearchPaging(private val searchRecycler: RecyclerView) :
+    inner class SearchPaging(searchRecycler: RecyclerView) :
         PagingRecyclerUtil(searchRecycler) {
         override fun checkLoadData(bottomPos: Int, topPos: Int) {
             if (SearchFragmentViewModel.COUNT_ELEMENTS_BEFORE_START_LOAD

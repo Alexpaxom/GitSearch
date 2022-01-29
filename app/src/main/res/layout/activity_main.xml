@@ -7,7 +7,7 @@
     tools:context=".app.features.mainwindow.activities.MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView"
+        android:id="@+id/main_fragment_container"
         android:name="com.alexpaxom.gitsearch.app.features.search.fragments.SearchFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"

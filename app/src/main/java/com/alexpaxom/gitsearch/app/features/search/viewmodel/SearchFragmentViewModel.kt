@@ -30,6 +30,8 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
     override fun processEvent(event: SearchEvent) {
         when (event) {
             is SearchEvent.Search -> {
+                allPageLoaded = false
+
                 setState(
                     currentState.copy(
                         searchResultList = listOf(),
