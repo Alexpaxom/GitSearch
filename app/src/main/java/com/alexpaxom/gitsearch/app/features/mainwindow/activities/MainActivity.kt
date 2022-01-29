@@ -1,4 +1,4 @@
-package com.alexpaxom.gitsearch.ui.features.mainwindow.activities
+package com.alexpaxom.gitsearch.app.features.mainwindow.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
