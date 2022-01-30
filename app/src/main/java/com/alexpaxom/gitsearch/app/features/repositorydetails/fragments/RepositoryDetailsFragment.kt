@@ -17,7 +17,6 @@ import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.databinding.FragmentRepositoryDetailsBinding
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
 
@@ -35,7 +34,10 @@ class RepositoryDetailsFragment : Fragment() {
     }
 
     private val mainActivityViewModel = lazy {
-        ViewModelProvider(requireActivity(), viewModelFactory).get(MainActivityViewModel::class.java)
+        ViewModelProvider(
+            requireActivity(),
+            viewModelFactory
+        ).get(MainActivityViewModel::class.java)
     }
 
     private val errorsHandler: ErrorsHandler = ErrorsHandler()
@@ -58,7 +60,9 @@ class RepositoryDetailsFragment : Fragment() {
     ): View {
         _binding = FragmentRepositoryDetailsBinding.inflate(inflater)
 
-
+        binding.backToListBth.setOnClickListener {
+            requireActivity().supportFragmentManager.popBackStack()
+        }
 
         return binding.root
     }
@@ -90,7 +94,7 @@ class RepositoryDetailsFragment : Fragment() {
     }
 
     private fun reloadData() {
-        if(repositoryInfo == null)
+        if (repositoryInfo == null)
             errorsHandler.processError(Throwable("Bad param repository info"))
 
         repositoryInfo?.let {
@@ -111,10 +115,6 @@ class RepositoryDetailsFragment : Fragment() {
         val glide = Glide.with(requireActivity())
 
         glide.load(state.repositoryOwnerInfo.avatarUrl)
-            .transform(
-                CenterCrop(),
-                //RoundedCorners(this.resources.getDimensionPixelOffset(R.dimen.profile_avatar_rounded_corners))
-            )
             .into(binding.ownerAvatar)
     }
 
@@ -127,7 +127,7 @@ class RepositoryDetailsFragment : Fragment() {
 
     private fun onReturnInternetConnection() {
         repositoryDetailsViewModel.value.viewState.value?.let {
-            if(!it.dataIsLoaded)
+            if (!it.dataIsLoaded)
                 reloadData()
         }
     }
