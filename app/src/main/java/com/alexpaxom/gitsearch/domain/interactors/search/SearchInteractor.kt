@@ -6,6 +6,7 @@ import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.features.search.viewmodel.SearchFragmentViewModel
 import com.alexpaxom.gitsearch.data.repositories.GitSearchRepository
+import com.alexpaxom.gitsearch.di.screen.ScreenScope
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -13,15 +14,18 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
-class SearchInteractor(
-    private val store: BaseStore<SearchState, SearchEvent>
+@ScreenScope
+class SearchInteractor @Inject constructor(
+    private val gitSearchRepository: GitSearchRepository,
 ) {
-
-    private val gitSearchRepository: GitSearchRepository = GitSearchRepository()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
-    fun search(event: SearchEvent.LoadPage) {
+    fun search(
+        event: SearchEvent.LoadPage,
+        store: BaseStore<SearchState, SearchEvent>
+    ) {
         gitSearchRepository.searchRepositories(
             searchString = event.searchString,
             page = event.pageNum,

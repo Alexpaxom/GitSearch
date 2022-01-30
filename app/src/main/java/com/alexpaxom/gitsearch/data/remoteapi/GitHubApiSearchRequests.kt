@@ -5,7 +5,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-interface GitHubApiRequests {
+interface GitHubApiSearchRequests {
     @GET("/search/repositories")
     fun getRepositories(
         @Query("q") search:String,

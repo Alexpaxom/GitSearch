@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alexpaxom.gitsearch.R
+import com.alexpaxom.gitsearch.app.App
 import com.alexpaxom.gitsearch.app.features.mainwindow.viewmodel.MainActivityViewModel
 import com.alexpaxom.gitsearch.app.features.repositorydetails.fragments.RepositoryDetailsFragment
 import com.alexpaxom.gitsearch.app.features.search.adapters.SearchListAdapter
@@ -23,6 +24,7 @@ import com.alexpaxom.gitsearch.databinding.FragmentSearchBinding
 import com.alexpaxom.homework_2.app.features.baseelements.adapters.PagingRecyclerUtil
 import com.google.android.material.snackbar.Snackbar
 import java.text.FieldPosition
+import javax.inject.Inject
 
 class SearchFragment : Fragment() {
 
@@ -31,16 +33,28 @@ class SearchFragment : Fragment() {
 
     private val searchListFactory: SearchListFactory = SearchListFactory { onItemClick(it) }
     private val searchListAdapter: SearchListAdapter = SearchListAdapter(searchListFactory)
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
     private val searchFragmentViewModel = lazy {
-        ViewModelProvider(this).get(SearchFragmentViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(SearchFragmentViewModel::class.java)
     }
 
     private val mainActivityViewModel = lazy {
-        ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+        ViewModelProvider(requireActivity(), viewModelFactory).get(MainActivityViewModel::class.java)
     }
 
     private val searchPaging = lazy {
         SearchPaging(binding.rwSearchList)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        (requireActivity().application as App).appComponent
+            .getScreenComponent()
+            .create()
+            .inject(this)
+        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(

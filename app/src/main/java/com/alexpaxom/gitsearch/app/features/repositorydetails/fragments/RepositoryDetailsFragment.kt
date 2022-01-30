@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.alexpaxom.gitsearch.app.App
 import com.alexpaxom.gitsearch.app.features.mainwindow.viewmodel.MainActivityViewModel
 import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsEffect
 import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsEvent
@@ -18,23 +19,33 @@ import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.google.android.material.snackbar.Snackbar
+import javax.inject.Inject
 
 class RepositoryDetailsFragment : Fragment() {
     private var repositoryInfo: RepositoryCard? = null
     private var _binding: FragmentRepositoryDetailsBinding? = null
     private val binding get() = _binding!!
 
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+
     private val repositoryDetailsViewModel = lazy {
-        ViewModelProvider(this).get(RepositoryDetailsViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(RepositoryDetailsViewModel::class.java)
     }
 
     private val mainActivityViewModel = lazy {
-        ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+        ViewModelProvider(requireActivity(), viewModelFactory).get(MainActivityViewModel::class.java)
     }
 
     private val errorsHandler: ErrorsHandler = ErrorsHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        (requireActivity().application as App).appComponent
+            .getScreenComponent()
+            .create()
+            .inject(this)
+
         super.onCreate(savedInstanceState)
         arguments?.let {
             repositoryInfo = it.getParcelable(REPOSITORY_INFO_ARG_PARAM)

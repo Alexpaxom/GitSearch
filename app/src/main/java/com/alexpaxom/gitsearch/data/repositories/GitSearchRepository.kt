@@ -1,50 +1,31 @@
 package com.alexpaxom.gitsearch.data.repositories
 
-import com.alexpaxom.gitsearch.data.cachedatabase.SingletonDatabase
+import com.alexpaxom.gitsearch.data.cachedatabase.daos.RepositoryCardDAO
+import com.alexpaxom.gitsearch.data.cachedatabase.daos.UserCardDAO
+import com.alexpaxom.gitsearch.data.remoteapi.GitHubApiSearchRequests
+import com.alexpaxom.gitsearch.di.screen.ScreenScope
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
-import com.alexpaxom.gitsearch.data.remoteapi.GitHubApiRequests
 import io.reactivex.Observable
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.moshi.MoshiConverterFactory
+import javax.inject.Inject
 
-class GitSearchRepository
-{
-    private val httpLoggingInterceptor = HttpLoggingInterceptor()
-        .apply {
-            HttpLoggingInterceptor.Level.BODY
-        }
-
-    private val okHttpClient = OkHttpClient.Builder()
-    .addInterceptor(httpLoggingInterceptor)
-    .build()
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl("https://api.github.com/")
-        .client(okHttpClient)
-        .addConverterFactory(MoshiConverterFactory.create())
-        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-        .build()
-
-    private val gitHubApiRequests: GitHubApiRequests = retrofit.create(GitHubApiRequests::class.java)
-
-    private val repositoryDao = SingletonDatabase.cacheDatabase.repositoriesDao()
-    private val usersDao = SingletonDatabase.cacheDatabase.usersDao()
-
+@ScreenScope
+class GitSearchRepository @Inject constructor(
+    private val gitHubApiSearchRequests: GitHubApiSearchRequests,
+    private val repositoryDao: RepositoryCardDAO,
+    private val usersDao: UserCardDAO
+) {
     fun searchRepositories(
-        searchString:String,
-        page:Int,
-        perPage:Int,
+        searchString: String,
+        page: Int,
+        perPage: Int,
         useCache: Boolean = false,
         refreshCache: Boolean = false,
     ): Observable<CacheWrapper<List<RepositoryCard>>> {
         return Observable.create { emiter ->
 
             // Берем кешированные данные с предыдущих запросов
-            if(useCache) {
+            if (useCache) {
                 val cacheRepositories = repositoryDao
                     .getAll()
                     .filter {
@@ -58,25 +39,26 @@ class GitSearchRepository
 
             try {
                 // Запрашиваем данные с сервера и возвращаем
-                val apiRepositories: List<RepositoryCard> = gitHubApiRequests.getRepositories(
+                val apiRepositories: List<RepositoryCard> = gitHubApiSearchRequests.getRepositories(
                     searchString,
                     page.toString(),
                     perPage.toString(),
                 ).execute().body()?.repositoriesCards ?: listOf()
 
-                if(refreshCache) {
+                // Сохраняем все результаты в БД для кеша
+                if (refreshCache) {
                     repositoryDao.deleteAll()
                     usersDao.deleteAll()
+
+                    repositoryDao.insertAll(apiRepositories)
                 }
-                // Сохраняем все результаты в БД для кеша
-                repositoryDao.insertAll(apiRepositories)
 
                 emiter.onNext(CacheWrapper.OriginalData(apiRepositories))
 
                 emiter.onComplete()
 
             } catch (e: Exception) {
-                if(!emiter.isDisposed) emiter.onError(e)
+                if (!emiter.isDisposed) emiter.onError(e)
             }
         }
     }

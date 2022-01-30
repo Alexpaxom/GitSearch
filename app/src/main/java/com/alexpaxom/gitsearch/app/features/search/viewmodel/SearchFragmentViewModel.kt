@@ -10,12 +10,19 @@ import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.app.helpers.LiveDataEvent
+import com.alexpaxom.gitsearch.di.screen.ScreenScope
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import com.alexpaxom.gitsearch.domain.interactors.search.ImmutableListUtils
 import com.alexpaxom.gitsearch.domain.interactors.search.SearchInteractor
+import javax.inject.Inject
 
-class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent> {
+@ScreenScope
+class SearchFragmentViewModel @Inject constructor(
+    private val searchInteractor: SearchInteractor,
+    private val errorsHandler: ErrorsHandler,
+
+) : ViewModel(), BaseStore<SearchState, SearchEvent> {
 
     private var lastSearchedString: String = ""
     private var allPageLoaded: Boolean = false
@@ -30,11 +37,8 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
     val effect: LiveData<LiveDataEvent<SearchEffect>>
         get() = _effect
 
-    private val searchInteractor: SearchInteractor = SearchInteractor(this)
-
     private val listUtils: ImmutableListUtils<RepositoryCard> = ImmutableListUtils()
 
-    private val errorsHandler: ErrorsHandler = ErrorsHandler()
 
     override fun processEvent(event: SearchEvent) {
         when (event) {
@@ -50,11 +54,12 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                 )
                 lastSearchedString = event.searchString
                 searchInteractor.search(
-                    SearchEvent.LoadPage(
+                    event = SearchEvent.LoadPage(
                         event.searchString,
                         START_PAGE,
                         COUNT_ELEMENTS_PER_PAGE
-                    )
+                    ),
+                    store = this
                 )
             }
             is SearchEvent.SearchError -> {
@@ -82,7 +87,7 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                         ),
                         isEmptyLoading = event.gitSearchResult is CacheWrapper.CachedData,
                         isNextPageLoading = false,
-                        nextPage = event.pageNum+1
+                        nextPage = event.pageNum + 1
                     )
                 )
             }
@@ -97,11 +102,12 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                 )
 
                 searchInteractor.search(
-                    SearchEvent.LoadPage(
+                    event = SearchEvent.LoadPage(
                         lastSearchedString,
                         currentState.nextPage,
                         COUNT_ELEMENTS_PER_PAGE
-                    )
+                    ),
+                    store = this
                 )
             }
             is SearchEvent.InternetConnectionEvent -> {

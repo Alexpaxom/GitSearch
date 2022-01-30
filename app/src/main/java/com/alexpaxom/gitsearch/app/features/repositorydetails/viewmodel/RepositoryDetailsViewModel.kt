@@ -9,10 +9,16 @@ import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.Re
 import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsState
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.app.helpers.LiveDataEvent
+import com.alexpaxom.gitsearch.di.screen.ScreenScope
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.interactors.repositoriesdetails.GetOwnerInfoInteractor
+import javax.inject.Inject
 
-class RepositoryDetailsViewModel : ViewModel(),
+@ScreenScope
+class RepositoryDetailsViewModel @Inject constructor(
+    private val getOwnerInfoInteractor: GetOwnerInfoInteractor,
+    private val errorsHandler: ErrorsHandler
+): ViewModel(),
     BaseStore<RepositoryDetailsState, RepositoryDetailsEvent> {
 
     private val _currentState: MutableLiveData<RepositoryDetailsState> = MutableLiveData()
@@ -24,11 +30,6 @@ class RepositoryDetailsViewModel : ViewModel(),
     private val _effect: MutableLiveData<LiveDataEvent<RepositoryDetailsEffect>> = MutableLiveData()
     val effect: LiveData<LiveDataEvent<RepositoryDetailsEffect>>
         get() = _effect
-
-
-    private val getOwnerInfoInteractor: GetOwnerInfoInteractor = GetOwnerInfoInteractor(this)
-
-    private val errorsHandler: ErrorsHandler = ErrorsHandler()
 
 
     override fun processEvent(event: RepositoryDetailsEvent) {
@@ -53,9 +54,10 @@ class RepositoryDetailsViewModel : ViewModel(),
                 )
 
                 getOwnerInfoInteractor.getUserInfo(
-                    RepositoryDetailsEvent.GetRepositoryOwnerDetails(
+                    event = RepositoryDetailsEvent.GetRepositoryOwnerDetails(
                         userId
-                    )
+                    ),
+                    store = this
                 )
             }
 

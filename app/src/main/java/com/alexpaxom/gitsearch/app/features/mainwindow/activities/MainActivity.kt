@@ -9,10 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import com.alexpaxom.gitsearch.app.App
 import com.alexpaxom.gitsearch.app.features.mainwindow.viewmodel.MainActivityViewModel
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.databinding.ActivityMainBinding
 import java.lang.IllegalArgumentException
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
@@ -21,11 +23,19 @@ class MainActivity : AppCompatActivity() {
 
     private val errorsHandler: ErrorsHandler = ErrorsHandler()
 
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
     private val mainActivityViewModel = lazy {
-        ViewModelProvider(this).get(MainActivityViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(MainActivityViewModel::class.java)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        (application as App).appComponent
+            .getScreenComponent()
+            .create()
+            .inject(this)
+
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
