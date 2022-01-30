@@ -3,10 +3,12 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.2703125" />
+        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/drawable/ic_github.xml" value="0.16296296296296298" />
         <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/activity_main.xml" value="0.264" />
-        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/fragment_repository_details.xml" value="0.264" />
-        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/fragment_search.xml" value="0.1793478260869565" />
-        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/rw_elem_repository_info.xml" value="0.17300724637681159" />
+        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/fragment_repository_details.xml" value="0.6" />
+        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/fragment_search.xml" value="0.176" />
+        <entry key="..\:/Users/AdminPC/Desktop/programs/GitSearch/GitSearch/app/src/main/res/layout/rw_elem_repository_info.xml" value="0.4" />
         <entry key="..\:/_/programing/kotlin/GitSearch/app/src/main/res/layout/fragment_search.xml" value="0.1828125" />
       </map>
     </option>

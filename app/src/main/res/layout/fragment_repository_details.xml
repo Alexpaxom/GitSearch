@@ -5,13 +5,37 @@
     android:id="@+id/repository_details_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".app.features.repositorydetails.fragments.RepositoryDetailsFragment"
-    android:fillViewport="true" >
+    android:background="@color/white"
+    android:backgroundTint="@color/white"
+    android:fillViewport="true"
+    tools:context=".app.features.repositorydetails.fragments.RepositoryDetailsFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/repository_details_wrap_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/action_bar"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:background="@color/action_bar_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/back_to_list_bth"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="10dp"
+                android:backgroundTint="#00FFFFFF"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_baseline_arrow_back_24"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ProgressBar
             android:id="@+id/load_info_progress"
@@ -29,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Details repository"
+            android:text="@string/details_repository_label"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -41,35 +65,45 @@
             android:id="@+id/repository_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Repository_title"
+            android:layout_marginTop="20dp"
+            tools:text="Repository_title"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/action_bar" />
 
         <TextView
             android:id="@+id/owner_info_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Owner"
+            android:text="@string/owner_label_details"
             android:textSize="16sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/repository_title" />
 
+        <View
+            android:id="@+id/owner_top_divider"
+            android:layout_width="409dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/owner_info_label" />
+
         <ImageView
             android:id="@+id/owner_avatar"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="5dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/owner_info_label"
+            app:layout_constraintTop_toBottomOf="@+id/owner_top_divider"
             tools:src="@tools:sample/avatars" />
 
         <TextView
@@ -77,32 +111,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:text="login"
+            tools:text="login"
             app:layout_constraintStart_toEndOf="@+id/owner_avatar"
-            app:layout_constraintTop_toBottomOf="@+id/owner_info_label" />
+            app:layout_constraintTop_toTopOf="@+id/owner_avatar" />
 
         <TextView
             android:id="@+id/login_name_delimiter_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
-            android:text=":"
+            android:text="@string/login_name_divider_detils"
+            app:layout_constraintBottom_toBottomOf="@+id/owner_login"
             app:layout_constraintStart_toEndOf="@+id/owner_login"
-            app:layout_constraintTop_toBottomOf="@+id/owner_info_label" />
+            app:layout_constraintTop_toTopOf="@+id/owner_login" />
 
         <TextView
             android:id="@+id/owner_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
-            android:text="name"
+            tools:text="name"
+            app:layout_constraintBottom_toBottomOf="@+id/owner_login"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/login_name_delimiter_label"
-            app:layout_constraintTop_toBottomOf="@+id/owner_info_label" />
+            app:layout_constraintTop_toTopOf="@+id/owner_login" />
 
         <TextView
             android:id="@+id/owner_email_label"
@@ -110,7 +143,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
-            android:text="email:"
+            android:text="@string/label_email_details"
             app:layout_constraintStart_toEndOf="@+id/owner_avatar"
             app:layout_constraintTop_toBottomOf="@+id/owner_login" />
 
@@ -119,17 +152,27 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
-            android:text="test@test.com"
+            tools:text="test@test.com"
             app:layout_constraintBottom_toBottomOf="@+id/owner_email_label"
             app:layout_constraintStart_toEndOf="@+id/owner_email_label"
             app:layout_constraintTop_toTopOf="@+id/owner_email_label" />
 
+        <View
+            android:id="@+id/owner_bottom_divider"
+            android:layout_width="409dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="5dp"
+            android:background="?android:attr/listDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/owner_avatar" />
+
         <TextView
-            android:id="@+id/desctiption_label"
+            android:id="@+id/description_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="Desctiption"
+            android:text="@string/description_label_details"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/details_repository_label" />
@@ -141,10 +184,10 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
-            android:text="desctipion"
+            tools:text="desctipion"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/desctiption_label" />
+            app:layout_constraintTop_toBottomOf="@+id/description_label" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
