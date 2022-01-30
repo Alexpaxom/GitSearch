@@ -11,14 +11,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alexpaxom.gitsearch.R
+import com.alexpaxom.gitsearch.app.features.mainwindow.viewmodel.MainActivityViewModel
 import com.alexpaxom.gitsearch.app.features.repositorydetails.fragments.RepositoryDetailsFragment
 import com.alexpaxom.gitsearch.app.features.search.adapters.SearchListAdapter
 import com.alexpaxom.gitsearch.app.features.search.adapters.SearchListFactory
+import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEffect
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.features.search.viewmodel.SearchFragmentViewModel
 import com.alexpaxom.gitsearch.databinding.FragmentSearchBinding
 import com.alexpaxom.homework_2.app.features.baseelements.adapters.PagingRecyclerUtil
+import com.google.android.material.snackbar.Snackbar
 import java.text.FieldPosition
 
 class SearchFragment : Fragment() {
@@ -30,6 +33,10 @@ class SearchFragment : Fragment() {
     private val searchListAdapter: SearchListAdapter = SearchListAdapter(searchListFactory)
     private val searchFragmentViewModel = lazy {
         ViewModelProvider(this).get(SearchFragmentViewModel::class.java)
+    }
+
+    private val mainActivityViewModel = lazy {
+        ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
     }
 
     private val searchPaging = lazy {
@@ -51,6 +58,24 @@ class SearchFragment : Fragment() {
         searchFragmentViewModel.value.viewState.observe(
             viewLifecycleOwner,
             { redrawState(it) }
+        )
+
+        mainActivityViewModel.value.internetConnection.observe(
+            viewLifecycleOwner,
+            {
+                searchFragmentViewModel.value.processEvent(
+                    SearchEvent.InternetConnectionEvent(it)
+                )
+            }
+        )
+
+        searchFragmentViewModel.value.effect.observe(
+            viewLifecycleOwner,
+            {  lifeDataEvent ->
+                lifeDataEvent.getContentIfNotHandled()?.let { effect ->
+                    processEffect(effect)
+                }
+            }
         )
 
         binding.bthSearch.setOnClickListener {
@@ -80,6 +105,19 @@ class SearchFragment : Fragment() {
             )
             .addToBackStack(RepositoryDetailsFragment.FRAGMENT_ID)
             .commit()
+    }
+
+    private fun processEffect(effect: SearchEffect) {
+        when(effect) {
+            is SearchEffect.ShowError -> showError(effect.error)
+        }
+    }
+
+    private fun showError(error: String) {
+        Snackbar.make(binding.root, error, Snackbar.LENGTH_INDEFINITE)
+            .setAction("OK") {}
+            .show()
+
     }
 
 

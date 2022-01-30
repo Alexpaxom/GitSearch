@@ -4,9 +4,13 @@ import com.alexpaxom.gitsearch.app.baseelements.BaseState
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 
 data class SearchState (
+    // ui
     val searchResultList: List<RepositoryCard> = listOf(),
     val isEmptyLoading: Boolean = false,
-    val currentPage: Int = 1,
+    val nextPage: Int = 1,
     val isNextPageLoading: Boolean = false,
-    val isError: Boolean = false
+    val isError: Boolean = false,
+
+    //inner
+    val hasInternetConnection: Boolean = true
 ): BaseState

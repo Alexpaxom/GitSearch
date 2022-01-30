@@ -1,13 +1,15 @@
 package com.alexpaxom.gitsearch.app.features.search.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.alexpaxom.gitsearch.app.baseelements.BaseStore
+import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsEffect
+import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEffect
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
+import com.alexpaxom.gitsearch.app.helpers.LiveDataEvent
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
 import com.alexpaxom.gitsearch.domain.interactors.search.ImmutableListUtils
@@ -15,7 +17,7 @@ import com.alexpaxom.gitsearch.domain.interactors.search.SearchInteractor
 
 class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent> {
 
-    private var lastSearchedString:String = ""
+    private var lastSearchedString: String = ""
     private var allPageLoaded: Boolean = false
 
     private val _currentState: MutableLiveData<SearchState> = MutableLiveData()
@@ -23,6 +25,10 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
         get() = _currentState
     private val currentState: SearchState
         get() = _currentState.value ?: SearchState()
+
+    private val _effect: MutableLiveData<LiveDataEvent<SearchEffect>> = MutableLiveData()
+    val effect: LiveData<LiveDataEvent<SearchEffect>>
+        get() = _effect
 
     private val searchInteractor: SearchInteractor = SearchInteractor(this)
 
@@ -38,7 +44,7 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                 setState(
                     currentState.copy(
                         searchResultList = listOf(),
-                        currentPage = START_PAGE,
+                        nextPage = START_PAGE,
                         isEmptyLoading = true
                     )
                 )
@@ -51,9 +57,12 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                     )
                 )
             }
-            is SearchEvent.SearchError -> errorsHandler.processError(event.error)
+            is SearchEvent.SearchError -> {
+                errorsHandler.processError(event.error)
+                _effect.value = LiveDataEvent(SearchEffect.ShowError(event.error.localizedMessage))
+            }
             is SearchEvent.SearchResult -> {
-                if(event.gitSearchResult.data.isEmpty()) {
+                if (event.gitSearchResult.data.isEmpty()) {
                     allPageLoaded = true
 
                     setState(
@@ -73,12 +82,12 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                         ),
                         isEmptyLoading = event.gitSearchResult is CacheWrapper.CachedData,
                         isNextPageLoading = false,
-                        currentPage = event.pageNum
+                        nextPage = event.pageNum+1
                     )
                 )
             }
             is SearchEvent.LoadNextPage -> {
-                if(currentState.isNextPageLoading || allPageLoaded)
+                if (currentState.isNextPageLoading || allPageLoaded)
                     return
 
                 setState(
@@ -90,8 +99,20 @@ class SearchFragmentViewModel : ViewModel(), BaseStore<SearchState, SearchEvent>
                 searchInteractor.search(
                     SearchEvent.LoadPage(
                         lastSearchedString,
-                        currentState.currentPage+1,
+                        currentState.nextPage,
                         COUNT_ELEMENTS_PER_PAGE
+                    )
+                )
+            }
+            is SearchEvent.InternetConnectionEvent -> {
+                if (event.hasInternetConnection == currentState.hasInternetConnection)
+                    return
+
+                setState(
+                    currentState.copy(
+                        hasInternetConnection = event.hasInternetConnection,
+                        isNextPageLoading = false,
+                        isEmptyLoading = false
                     )
                 )
             }

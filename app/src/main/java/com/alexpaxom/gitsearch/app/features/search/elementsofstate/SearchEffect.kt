@@ -1,4 +1,5 @@
 package com.alexpaxom.gitsearch.app.features.search.elementsofstate
 
-interface SearchEffect {
+sealed interface SearchEffect {
+    class ShowError(val error: String): SearchEffect
 }
