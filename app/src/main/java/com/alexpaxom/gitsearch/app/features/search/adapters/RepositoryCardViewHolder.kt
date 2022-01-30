@@ -17,7 +17,15 @@ class RepositoryCardViewHolder(
 
     override fun bind(model: RepositoryCard) {
         rwElemRepositoryInfoBinding.rwElemRepositoryTitle.text = model.name
-        rwElemRepositoryInfoBinding.rwElemRepositoryDescription.text = model.description
+        model.description?.let {
+            val descrption = it.substring(0, it.length.coerceAtMost(MAX_DESCRIPTION_CHARACTER_SIZE))
+                rwElemRepositoryInfoBinding.rwElemRepositoryDescription.text =
+                    "$descrption${if(descrption.length < it.length) "..." else ""}"
+        }
         rwElemRepositoryInfoBinding.rwElemRepositoryForks.text = model.forksCount.toString()
+    }
+
+    companion object {
+        private const val MAX_DESCRIPTION_CHARACTER_SIZE = 200
     }
 }
