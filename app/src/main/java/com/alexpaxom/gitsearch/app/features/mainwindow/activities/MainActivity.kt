@@ -41,9 +41,8 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mainActivityViewModel.value.setInternetConnection(hasInternetConnection())
-
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        mainActivityViewModel.value.setInternetConnection(hasInternetConnection(cm))
         val networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -57,9 +56,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun hasInternetConnection(): Boolean {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE)
-                as ConnectivityManager
+    private fun hasInternetConnection(cm: ConnectivityManager): Boolean {
+
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             cm.allNetworks
                 .mapNotNull(cm::getNetworkCapabilities)
