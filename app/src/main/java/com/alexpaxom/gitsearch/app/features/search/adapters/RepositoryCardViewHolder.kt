@@ -17,6 +17,8 @@ class RepositoryCardViewHolder(
 
     override fun bind(model: RepositoryCard) {
         rwElemRepositoryInfoBinding.rwElemRepositoryTitle.text = model.name
+
+        rwElemRepositoryInfoBinding.rwElemRepositoryDescription.text = ""
         model.description?.let {
             val descrption = it.substring(0, it.length.coerceAtMost(MAX_DESCRIPTION_CHARACTER_SIZE))
                 rwElemRepositoryInfoBinding.rwElemRepositoryDescription.text =
