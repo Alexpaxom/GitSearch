@@ -113,12 +113,17 @@ class SearchFragmentViewModel @Inject constructor(
             return
         }
 
+        val resultList = if (event.pageNum == START_PAGE)
+            event.gitSearchResult.data
+            else
+            listUtils.append(
+                currentList = currentState.searchResultList,
+                newList = event.gitSearchResult.data
+            )
+
         setState(
             currentState.copy(
-                searchResultList = listUtils.append(
-                    currentList = currentState.searchResultList,
-                    newList = event.gitSearchResult.data
-                ),
+                searchResultList = resultList,
                 isEmptyLoading = event.gitSearchResult is CacheWrapper.CachedData,
                 isNextPageLoading = false,
                 nextPage = event.pageNum + 1
