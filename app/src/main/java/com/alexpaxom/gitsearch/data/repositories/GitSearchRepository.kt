@@ -23,21 +23,27 @@ class GitSearchRepository @Inject constructor(
         refreshCache: Boolean = false,
     ): Observable<CacheWrapper<List<RepositoryCard>>> {
         return Observable.create { emiter ->
-
-            // Берем кешированные данные с предыдущих запросов
-            if (useCache) {
-                val cacheRepositories = repositoryDao
-                    .getAll()
-                    .filter {
-                        // Ищем в сохраненном кеше строку соотвествующую запросу
-                        it.description?.contains(searchString, ignoreCase = true) ?: false ||
-                                it.name?.contains(searchString, ignoreCase = true) ?: false
-                    }
-                if (cacheRepositories.isNotEmpty())
-                    emiter.onNext(CacheWrapper.OriginalData(cacheRepositories))
-            }
-
             try {
+                // Берем кешированные данные с предыдущих запросов
+                if (useCache) {
+                    val cacheRepositories = repositoryDao
+                        .getAll()
+                        .filter {
+                            // Ищем в сохраненном кеше строку соотвествующую запросу
+                            it.description?.contains(searchString, ignoreCase = true) ?: false ||
+                                    it.name?.contains(searchString, ignoreCase = true) ?: false
+                        }
+                    if (cacheRepositories.isNotEmpty())
+                        emiter.onNext(CacheWrapper.OriginalData(cacheRepositories))
+                }
+
+                // Если строка поиска пустая просто возвращаем пустой список
+                if(searchString.trim().isEmpty()) {
+                    emiter.onNext(CacheWrapper.OriginalData(listOf()))
+                    emiter.onComplete()
+                    return@create
+                }
+
                 // Запрашиваем данные с сервера и возвращаем
                 val apiRepositories: List<RepositoryCard> = gitHubApiSearchRequests.getRepositories(
                     searchString,

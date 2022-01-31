@@ -43,16 +43,16 @@ class GitUsersRepository @Inject constructor(
         refreshCache: Boolean = false,
     ): Observable<CacheWrapper<UserCard>> {
         return Observable.create { emiter ->
-
-            // Берем кешированные данные с предыдущих запросов
-            if(useCache) {
-                val cachedUser = usersDao.getUserByID(userId)
-                if(cachedUser != null) {
-                    emiter.onNext(CacheWrapper.CachedData(cachedUser))
-                }
-            }
-
             try {
+
+                // Берем кешированные данные с предыдущих запросов
+                if(useCache) {
+                    val cachedUser = usersDao.getUserByID(userId)
+                    if(cachedUser != null) {
+                        emiter.onNext(CacheWrapper.CachedData(cachedUser))
+                    }
+                }
+
                 // Запрашиваем данные с сервера и возвращаем
                 val apiUserCard: UserCard = gitHubApiUsers.getUserById(
                     userId
