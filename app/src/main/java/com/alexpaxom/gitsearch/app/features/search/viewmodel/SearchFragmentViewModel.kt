@@ -64,6 +64,14 @@ class SearchFragmentViewModel @Inject constructor(
             }
             is SearchEvent.SearchError -> {
                 errorsHandler.processError(event.error)
+
+                setState(
+                    currentState.copy(
+                        isNextPageLoading = false,
+                        isEmptyLoading = false
+                    )
+                )
+
                 _effect.value = LiveDataEvent(SearchEffect.ShowError(event.error.localizedMessage))
             }
             is SearchEvent.SearchResult -> {
@@ -72,7 +80,8 @@ class SearchFragmentViewModel @Inject constructor(
 
                     setState(
                         currentState.copy(
-                            isNextPageLoading = false
+                            isNextPageLoading = false,
+                            isEmptyLoading = false
                         )
                     )
 
