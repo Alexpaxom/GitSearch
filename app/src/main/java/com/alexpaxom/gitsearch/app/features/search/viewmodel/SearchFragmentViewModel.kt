@@ -9,6 +9,7 @@ import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.app.helpers.LiveDataEvent
+import com.alexpaxom.gitsearch.app.helpers.SharPrefUtil
 import com.alexpaxom.gitsearch.di.screen.ScreenScope
 import com.alexpaxom.gitsearch.domain.entities.CacheWrapper
 import com.alexpaxom.gitsearch.domain.entities.RepositoryCard
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class SearchFragmentViewModel @Inject constructor(
     private val searchInteractor: SearchInteractor,
     private val errorsHandler: ErrorsHandler,
+    private val sharPrefUtil: SharPrefUtil
 
 ) : ViewModel(), BaseStore<SearchState, SearchEvent> {
 
@@ -38,6 +40,11 @@ class SearchFragmentViewModel @Inject constructor(
 
     private val listUtils: ImmutableListUtils<RepositoryCard> = ImmutableListUtils()
 
+    init {
+        lastSearchedString = sharPrefUtil.getFromPref(LAST_SEARCH_STRING_KEY)
+        processSearchEvent(SearchEvent.Search(lastSearchedString))
+    }
+
 
     override fun processEvent(event: SearchEvent) {
         when (event) {
@@ -51,6 +58,8 @@ class SearchFragmentViewModel @Inject constructor(
 
     private fun processSearchEvent(event: SearchEvent.Search) {
         allPageLoaded = false
+
+        sharPrefUtil.addToPref(LAST_SEARCH_STRING_KEY, event.searchString)
 
         setState(
             currentState.copy(
@@ -80,12 +89,13 @@ class SearchFragmentViewModel @Inject constructor(
             )
         )
 
-        _effect.value = LiveDataEvent(SearchEffect.ShowError(
-            event.error.localizedMessage
-                ?:
-                event.error.message
-                ?: "Error when try search!"
-        ))
+        _effect.value = LiveDataEvent(
+            SearchEffect.ShowError(
+                event.error.localizedMessage
+                    ?: event.error.message
+                    ?: "Error when try search!"
+            )
+        )
     }
 
     private fun processSearchResultEvent(event: SearchEvent.SearchResult) {
@@ -161,5 +171,7 @@ class SearchFragmentViewModel @Inject constructor(
         const val COUNT_ELEMENTS_BEFORE_START_LOAD = 5
         const val START_PAGE = 1
         const val COUNT_ELEMENTS_PER_PAGE = 10
+
+        private const val LAST_SEARCH_STRING_KEY = "LAST_SEARCH_STRING"
     }
 }

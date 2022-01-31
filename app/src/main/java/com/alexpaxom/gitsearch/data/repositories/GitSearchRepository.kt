@@ -24,6 +24,13 @@ class GitSearchRepository @Inject constructor(
     ): Observable<CacheWrapper<List<RepositoryCard>>> {
         return Observable.create { emiter ->
             try {
+                // Если строка поиска пустая просто возвращаем пустой список
+                if(searchString.trim().isEmpty()) {
+                    emiter.onNext(CacheWrapper.OriginalData(listOf()))
+                    emiter.onComplete()
+                    return@create
+                }
+
                 // Берем кешированные данные с предыдущих запросов
                 if (useCache) {
                     val cacheRepositories = repositoryDao
@@ -35,13 +42,6 @@ class GitSearchRepository @Inject constructor(
                         }
                     if (cacheRepositories.isNotEmpty())
                         emiter.onNext(CacheWrapper.OriginalData(cacheRepositories))
-                }
-
-                // Если строка поиска пустая просто возвращаем пустой список
-                if(searchString.trim().isEmpty()) {
-                    emiter.onNext(CacheWrapper.OriginalData(listOf()))
-                    emiter.onComplete()
-                    return@create
                 }
 
                 // Запрашиваем данные с сервера и возвращаем
