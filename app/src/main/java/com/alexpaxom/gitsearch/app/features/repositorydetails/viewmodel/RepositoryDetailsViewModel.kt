@@ -34,73 +34,91 @@ class RepositoryDetailsViewModel @Inject constructor(
 
     override fun processEvent(event: RepositoryDetailsEvent) {
         when (event) {
-            is RepositoryDetailsEvent.GetRepositoryDetails -> {
-                val userId = event.repositoryInfo.owner?.id
-
-                if (userId == null) {
-                    errorsHandler.processError(Throwable("Bad owner repository id"))
-                    return
-                }
-
-                if (!currentState.hasInternetConnection)
-                    return
-
-                setState(
-                    currentState.copy(
-                        repositoryInfo = event.repositoryInfo,
-                        isEmptyLoading = true,
-                        dataIsLoaded = false
-                    )
-                )
-
-                getOwnerInfoInteractor.getUserInfo(
-                    event = RepositoryDetailsEvent.GetRepositoryOwnerDetails(
-                        userId
-                    ),
-                    store = this
-                )
-            }
-
-            is RepositoryDetailsEvent.GetInformationError -> {
-                errorsHandler.processError(event.error)
-
-                _effect.value =
-                    LiveDataEvent(RepositoryDetailsEffect.ShowError(event.error.localizedMessage))
-
-                setState(
-                    currentState.copy(
-                        dataIsLoaded = false
-                    )
-                )
-            }
+            is RepositoryDetailsEvent.GetRepositoryDetails -> processGetRepositoryDetailsEvent(event)
+            is RepositoryDetailsEvent.GetInformationError -> processGetInformationErrorEvent(event)
 
             is RepositoryDetailsEvent.GetRepositoryOwnerDetails ->
                 errorsHandler.processError(Throwable("Bad event in Store"))
 
-            is RepositoryDetailsEvent.ResultRepositoryOwnerDetails -> {
-                setState(
-                    currentState.copy(
-                        repositoryOwnerInfo = event.ownerInfo.data,
-                        isEmptyLoading = event.ownerInfo is CacheWrapper.CachedData,
-                        dataIsLoaded = true
-                    )
-                )
-            }
-            is RepositoryDetailsEvent.InternetConnectionEvent -> {
-                if (event.hasInternetConnection == currentState.hasInternetConnection)
-                    return
+            is RepositoryDetailsEvent.ResultRepositoryOwnerDetails ->
+                processResultRepositoryOwnerDetailsEvent(event)
 
-                setState(
-                    currentState.copy(
-                        isEmptyLoading = false,
-                        hasInternetConnection = event.hasInternetConnection
-                    )
-                )
-
-                if (event.hasInternetConnection)
-                    _effect.value = LiveDataEvent(RepositoryDetailsEffect.ReloadData)
-            }
+            is RepositoryDetailsEvent.InternetConnectionEvent ->
+                processInternetConnectionEventEvent(event)
         }
+    }
+
+    private fun processGetRepositoryDetailsEvent(event: RepositoryDetailsEvent.GetRepositoryDetails) {
+        val userId = event.repositoryInfo.owner?.id
+
+        if (userId == null) {
+            errorsHandler.processError(Throwable("Bad owner repository id"))
+            return
+        }
+
+        if (!currentState.hasInternetConnection)
+            return
+
+        setState(
+            currentState.copy(
+                repositoryInfo = event.repositoryInfo,
+                isEmptyLoading = true,
+                dataIsLoaded = false
+            )
+        )
+
+        getOwnerInfoInteractor.getUserInfo(
+            event = RepositoryDetailsEvent.GetRepositoryOwnerDetails(
+                userId
+            ),
+            store = this
+        )
+    }
+
+    private fun processGetInformationErrorEvent(event: RepositoryDetailsEvent.GetInformationError) {
+        errorsHandler.processError(event.error)
+
+        _effect.value =
+            LiveDataEvent(RepositoryDetailsEffect.ShowError(
+                error = event.error.localizedMessage ?:
+                event.error.message ?:
+                "Error when load repository details!"
+            ))
+
+        setState(
+            currentState.copy(
+                dataIsLoaded = false
+            )
+        )
+    }
+
+    private fun processResultRepositoryOwnerDetailsEvent(
+        event: RepositoryDetailsEvent.ResultRepositoryOwnerDetails
+    ) {
+        setState(
+            currentState.copy(
+                repositoryOwnerInfo = event.ownerInfo.data,
+                isEmptyLoading = event.ownerInfo is CacheWrapper.CachedData,
+                dataIsLoaded = true
+            )
+        )
+    }
+
+    private fun processInternetConnectionEventEvent(
+        event: RepositoryDetailsEvent.InternetConnectionEvent
+    ) {
+        if (event.hasInternetConnection == currentState.hasInternetConnection)
+            return
+
+        setState(
+            currentState.copy(
+                isEmptyLoading = false,
+                hasInternetConnection = event.hasInternetConnection
+            )
+        )
+
+        if (event.hasInternetConnection)
+            _effect.value = LiveDataEvent(RepositoryDetailsEffect.ReloadData)
     }
 
     override fun setState(state: RepositoryDetailsState) {

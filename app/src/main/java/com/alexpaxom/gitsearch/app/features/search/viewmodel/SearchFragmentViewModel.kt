@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.alexpaxom.gitsearch.app.baseelements.BaseStore
-import com.alexpaxom.gitsearch.app.features.repositorydetails.elementsofstate.RepositoryDetailsEffect
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEffect
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchEvent
 import com.alexpaxom.gitsearch.app.features.search.elementsofstate.SearchState
@@ -42,96 +41,111 @@ class SearchFragmentViewModel @Inject constructor(
 
     override fun processEvent(event: SearchEvent) {
         when (event) {
-            is SearchEvent.Search -> {
-                allPageLoaded = false
-
-                setState(
-                    currentState.copy(
-                        searchResultList = listOf(),
-                        nextPage = START_PAGE,
-                        isEmptyLoading = true
-                    )
-                )
-                lastSearchedString = event.searchString
-                searchInteractor.search(
-                    event = SearchEvent.LoadPage(
-                        event.searchString,
-                        START_PAGE,
-                        COUNT_ELEMENTS_PER_PAGE
-                    ),
-                    store = this
-                )
-            }
-            is SearchEvent.SearchError -> {
-                errorsHandler.processError(event.error)
-
-                setState(
-                    currentState.copy(
-                        isNextPageLoading = false,
-                        isEmptyLoading = false
-                    )
-                )
-
-                _effect.value = LiveDataEvent(SearchEffect.ShowError(event.error.localizedMessage))
-            }
-            is SearchEvent.SearchResult -> {
-                if (event.gitSearchResult.data.isEmpty()) {
-                    allPageLoaded = true
-
-                    setState(
-                        currentState.copy(
-                            isNextPageLoading = false,
-                            isEmptyLoading = false
-                        )
-                    )
-
-                    return
-                }
-
-                setState(
-                    currentState.copy(
-                        searchResultList = listUtils.append(
-                            currentList = currentState.searchResultList,
-                            newList = event.gitSearchResult.data
-                        ),
-                        isEmptyLoading = event.gitSearchResult is CacheWrapper.CachedData,
-                        isNextPageLoading = false,
-                        nextPage = event.pageNum + 1
-                    )
-                )
-            }
-            is SearchEvent.LoadNextPage -> {
-                if (currentState.isNextPageLoading || allPageLoaded)
-                    return
-
-                setState(
-                    currentState.copy(
-                        isNextPageLoading = true
-                    )
-                )
-
-                searchInteractor.search(
-                    event = SearchEvent.LoadPage(
-                        lastSearchedString,
-                        currentState.nextPage,
-                        COUNT_ELEMENTS_PER_PAGE
-                    ),
-                    store = this
-                )
-            }
-            is SearchEvent.InternetConnectionEvent -> {
-                if (event.hasInternetConnection == currentState.hasInternetConnection)
-                    return
-
-                setState(
-                    currentState.copy(
-                        hasInternetConnection = event.hasInternetConnection,
-                        isNextPageLoading = false,
-                        isEmptyLoading = false
-                    )
-                )
-            }
+            is SearchEvent.Search -> processSearchEvent(event)
+            is SearchEvent.SearchError -> processSearchErrorEvent(event)
+            is SearchEvent.SearchResult -> processSearchResultEvent(event)
+            is SearchEvent.LoadNextPage -> processLoadNextPageEvent(event)
+            is SearchEvent.InternetConnectionEvent -> processInternetConnectionEvent(event)
         }
+    }
+
+    private fun processSearchEvent(event: SearchEvent.Search) {
+        allPageLoaded = false
+
+        setState(
+            currentState.copy(
+                searchResultList = listOf(),
+                nextPage = START_PAGE,
+                isEmptyLoading = true
+            )
+        )
+        lastSearchedString = event.searchString
+        searchInteractor.search(
+            event = SearchEvent.LoadPage(
+                event.searchString,
+                START_PAGE,
+                COUNT_ELEMENTS_PER_PAGE
+            ),
+            store = this
+        )
+    }
+
+    private fun processSearchErrorEvent(event: SearchEvent.SearchError) {
+        errorsHandler.processError(event.error)
+
+        setState(
+            currentState.copy(
+                isNextPageLoading = false,
+                isEmptyLoading = false
+            )
+        )
+
+        _effect.value = LiveDataEvent(SearchEffect.ShowError(
+            event.error.localizedMessage
+                ?:
+                event.error.message
+                ?: "Error when try search!"
+        ))
+    }
+
+    private fun processSearchResultEvent(event: SearchEvent.SearchResult) {
+        if (event.gitSearchResult.data.isEmpty()) {
+            allPageLoaded = true
+
+            setState(
+                currentState.copy(
+                    isNextPageLoading = false,
+                    isEmptyLoading = false
+                )
+            )
+
+            return
+        }
+
+        setState(
+            currentState.copy(
+                searchResultList = listUtils.append(
+                    currentList = currentState.searchResultList,
+                    newList = event.gitSearchResult.data
+                ),
+                isEmptyLoading = event.gitSearchResult is CacheWrapper.CachedData,
+                isNextPageLoading = false,
+                nextPage = event.pageNum + 1
+            )
+        )
+    }
+
+    private fun processLoadNextPageEvent(event: SearchEvent.LoadNextPage) {
+        if (currentState.isNextPageLoading || allPageLoaded || currentState.isEmptyLoading)
+            return
+
+        setState(
+            currentState.copy(
+                isNextPageLoading = true
+            )
+        )
+
+        searchInteractor.search(
+            event = SearchEvent.LoadPage(
+                lastSearchedString,
+                currentState.nextPage,
+                COUNT_ELEMENTS_PER_PAGE
+            ),
+            store = this
+        )
+    }
+
+    private fun processInternetConnectionEvent(event: SearchEvent.InternetConnectionEvent) {
+        if (event.hasInternetConnection == currentState.hasInternetConnection)
+            return
+
+        setState(
+            currentState.copy(
+                hasInternetConnection = event.hasInternetConnection,
+                isNextPageLoading = false,
+                isEmptyLoading = false
+            )
+        )
     }
 
     override fun setState(state: SearchState) {
