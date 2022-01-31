@@ -87,7 +87,8 @@ class RepositoryDetailsViewModel @Inject constructor(
 
         setState(
             currentState.copy(
-                dataIsLoaded = false
+                dataIsLoaded = false,
+                isEmptyLoading = false
             )
         )
     }

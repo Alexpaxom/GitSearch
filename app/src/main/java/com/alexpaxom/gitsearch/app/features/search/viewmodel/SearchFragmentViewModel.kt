@@ -60,6 +60,7 @@ class SearchFragmentViewModel @Inject constructor(
         allPageLoaded = false
 
         sharPrefUtil.addToPref(LAST_SEARCH_STRING_KEY, event.searchString)
+        lastSearchedString = event.searchString
 
         setState(
             currentState.copy(
@@ -68,7 +69,7 @@ class SearchFragmentViewModel @Inject constructor(
                 isEmptyLoading = true
             )
         )
-        lastSearchedString = event.searchString
+
         searchInteractor.search(
             event = SearchEvent.LoadPage(
                 event.searchString,
@@ -126,7 +127,11 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun processLoadNextPageEvent(event: SearchEvent.LoadNextPage) {
-        if (currentState.isNextPageLoading || allPageLoaded || currentState.isEmptyLoading)
+        if (currentState.isNextPageLoading ||
+            allPageLoaded ||
+            currentState.isEmptyLoading ||
+            !currentState.hasInternetConnection
+        )
             return
 
         setState(
@@ -170,7 +175,7 @@ class SearchFragmentViewModel @Inject constructor(
     companion object {
         const val COUNT_ELEMENTS_BEFORE_START_LOAD = 5
         const val START_PAGE = 1
-        const val COUNT_ELEMENTS_PER_PAGE = 10
+        const val COUNT_ELEMENTS_PER_PAGE = 20
 
         private const val LAST_SEARCH_STRING_KEY = "LAST_SEARCH_STRING"
     }

@@ -4,16 +4,17 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET
 import android.net.NetworkRequest
-import androidx.appcompat.app.AppCompatActivity
+import android.os.Build
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.alexpaxom.gitsearch.app.App
 import com.alexpaxom.gitsearch.app.features.mainwindow.viewmodel.MainActivityViewModel
 import com.alexpaxom.gitsearch.app.helpers.ErrorsHandler
 import com.alexpaxom.gitsearch.databinding.ActivityMainBinding
-import java.lang.IllegalArgumentException
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        mainActivityViewModel.value.setInternetConnection(hasInternetConnection())
 
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkRequest = NetworkRequest.Builder()
@@ -53,6 +55,18 @@ class MainActivity : AppCompatActivity() {
             cm.registerNetworkCallback(networkRequest, it)
         }
 
+    }
+
+    private fun hasInternetConnection(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE)
+                as ConnectivityManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            cm.allNetworks
+                .mapNotNull(cm::getNetworkCapabilities)
+                .any { capabilities -> capabilities.hasCapability(NET_CAPABILITY_INTERNET) }
+        } else {
+            cm.activeNetworkInfo?.isConnected == true
+        }
     }
 
     override fun onDestroy() {
