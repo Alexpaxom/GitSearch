@@ -37,8 +37,10 @@ class SearchInteractor @Inject constructor(
             .observeOn(AndroidSchedulers.mainThread(), true)
             .subscribeBy(
                 onNext = {
+                    val typedRepositoriesList = setItemListType(it)
+
                     store.processEvent(SearchEvent.SearchResult(
-                        setItemListType(it),
+                        sortRepositories(typedRepositoriesList),
                         event.pageNum
                     ))
                 },
@@ -53,13 +55,23 @@ class SearchInteractor @Inject constructor(
         cachedData: CacheWrapper<List<RepositoryCard>>
     ):
     CacheWrapper<List<RepositoryCard>> {
-        val data = cachedData.data.map {
-            it.copy(typeId = R.layout.rw_elem_repository_info)
-        }
 
-        return when(cachedData) {
-            is CacheWrapper.CachedData -> CacheWrapper.CachedData(data)
-            is CacheWrapper.OriginalData -> CacheWrapper.OriginalData(data)
+        return cachedData.mapWrapped { list ->
+            list.map { repository ->
+                repository.copy(typeId = R.layout.rw_elem_repository_info)
+            }
+        }
+    }
+
+    private fun sortRepositories(
+        cachedData: CacheWrapper<List<RepositoryCard>>
+    ):
+            CacheWrapper<List<RepositoryCard>> {
+
+        return cachedData.mapWrapped { list ->
+            list.sortedBy {
+                    repositoryCard ->  repositoryCard.name
+            }
         }
     }
 
