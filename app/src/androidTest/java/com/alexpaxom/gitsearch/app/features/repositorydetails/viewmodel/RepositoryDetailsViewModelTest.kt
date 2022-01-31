@@ -41,6 +41,11 @@ class RepositoryDetailsViewModelTest : TestCase() {
 
     }
 
+    /*
+    *Проверяем обработку события потери интернета
+    * Ожтдаем что будет установлен параметр hasInternetConnection = false во viewState
+    */
+
     @UiThreadTest
     @Test
     fun lostInternetConnectionEvent() {
@@ -56,6 +61,12 @@ class RepositoryDetailsViewModelTest : TestCase() {
             ) && effect == null
         )
     }
+
+    /*
+    *Проверяем обработку события возврата подключения
+    * Ожтдаем что будет установлен параметр hasInternetConnection = true во viewState
+    * В effects должен должен появится новый объект на перезагрузку страницы
+    */
 
     @UiThreadTest
     @Test
@@ -78,6 +89,11 @@ class RepositoryDetailsViewModelTest : TestCase() {
         )
     }
 
+    /*
+    * Проверяем что если пришло событие что интернет у нас есть но в state записано что он есть
+    * Эффект на перезагрузку не должен был добавиться в effects
+    */
+
     @UiThreadTest
     @Test
     fun internetConnectionNoChangedEvent() {
@@ -90,6 +106,12 @@ class RepositoryDetailsViewModelTest : TestCase() {
             viewModelTest.effect.value?.getContentIfNotHandled() == null
         )
     }
+
+    /*
+    * Проверяем что последовательность событий на GetRepositoryDetailsEvent
+    * Ожидаем что в viewState добавлена информация о репозитории которую мы передали
+    * Была иннициирована загрузка данных по средствам вызова метода getUserInfo
+    */
 
     @UiThreadTest
     @Test
@@ -115,6 +137,13 @@ class RepositoryDetailsViewModelTest : TestCase() {
         )
     }
 
+    /*
+    * Проверяем что последовательность событий на GetRepositoryDetailsEvent если на был передан id владельца репозитория
+    * Ожидаем что в viewState добавлена информация о репозитории которую мы передали
+    * НЕ была иннициирована загрузка данных по средствам вызова метода getUserInfo
+    * Была обработана ошибка по средствам вызова processError
+    */
+
     @UiThreadTest
     @Test
     fun getRepositoryDetailsEventWithoutOwnerId() {
@@ -136,6 +165,12 @@ class RepositoryDetailsViewModelTest : TestCase() {
         )
     }
 
+    /*
+    * Проверяем что последовательность событий на GetRepositoryDetailsEvent если нет подключения к интернету
+    * Ожидаем что в viewState добавлена информация о репозитории которую мы передали
+    * НЕ была иннициирована загрузка данных по средствам вызова метода getUserInfo
+    */
+
     @UiThreadTest
     @Test
     fun getRepositoryDetailsNoInternetEvent() {
@@ -155,6 +190,11 @@ class RepositoryDetailsViewModelTest : TestCase() {
         verify(exactly = 0) { getOwnerInfoInteractor.getUserInfo(any(), any()) }
     }
 
+    /*
+    * Проверяем что последовательность событий на GetRepositoryOwnerDetails
+    * Ожидаем что будет обработана ошибка, т.к. данный класс не должен поступать данный тип события
+    */
+
     @UiThreadTest
     @Test
     fun getRepositoryOwnerDetailsEvent() {
@@ -165,6 +205,13 @@ class RepositoryDetailsViewModelTest : TestCase() {
 
         verify { errorsHandler.processError(any(), any()) }
     }
+
+    /*
+    * Проверяем что последовательность событий на GetRepositoryOwnerDetails
+    * Ожидаем что параметры указывающие на загрузку данных dataIsLoaded = false и isEmptyLoading = false во viewState
+    * В effects добавлен объект на отображение ошибки в UI
+    * Была обработана ошибка по средствам вызова processError
+    */
 
     @UiThreadTest
     @Test
@@ -178,7 +225,9 @@ class RepositoryDetailsViewModelTest : TestCase() {
 
         assertTrue(
             viewModelTest.viewState.value == RepositoryDetailsState(
-                dataIsLoaded = false
+                dataIsLoaded = false,
+                isEmptyLoading = false
+
             )
         )
         val effect = viewModelTest.effect.value?.getContentIfNotHandled()
@@ -187,6 +236,13 @@ class RepositoryDetailsViewModelTest : TestCase() {
             effect != null && effect is RepositoryDetailsEffect.ShowError
         )
     }
+
+    /*
+    * Проверяем что последовательность событий на успешную загрузку данных о владельце репозитория из кеша приложения
+    * Ожидаем что параметр указывающий что данные загружены dataIsLoaded = true во viewState
+    * Ожидаем что параметр указывающий что данные сейчас загружаются isEmptyLoading = false во viewState
+    * viewState содержит информацию о пользователе repositoryOwnerInfo
+    */
 
     @UiThreadTest
     @Test
@@ -207,6 +263,13 @@ class RepositoryDetailsViewModelTest : TestCase() {
             )
         )
     }
+
+    /*
+    * Проверяем что последовательность событий на успешную загрузку данных о владельце репозитория из api github
+    * Ожидаем что параметр указывающий что данные загружены dataIsLoaded = true во viewState
+    * Ожидаем что параметр указывающий что данные сейчас загружаются isEmptyLoading = false во viewState
+    * viewState содержит информацию о пользователе repositoryOwnerInfo
+    */
 
     @UiThreadTest
     @Test

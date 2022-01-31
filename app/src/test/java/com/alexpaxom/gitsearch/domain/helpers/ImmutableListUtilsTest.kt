@@ -18,8 +18,12 @@ class ImmutableListUtilsTest{
         listUtils = ImmutableListUtils()
     }
 
+    /*
+    * Проверяем добавление элементов иммутабельный в список
+    * Ожидаем в результирующем списке должны присутствовать элементы из двух списков
+    */
     @Test
-    fun appendToEmptyList() {
+    fun appendToxList() {
         val targetList = listOf(1,1,3,3)
         val newList = listOf(5,5)
         val resultList = listUtils.append(targetList, newList)
@@ -30,8 +34,12 @@ class ImmutableListUtilsTest{
         )
     }
 
+    /*
+    * Проверяем добавление элементов пустой иммутабельный в список
+    * Ожидаем в результирующем списке должны присутствовать элементы из списка с элементами
+    */
     @Test
-    fun appendToList() {
+    fun appendToEmptyList() {
         val newList = listOf(1,1,3,3,5,5)
         val resultList = listUtils.append(listOf(), newList)
 
@@ -41,6 +49,10 @@ class ImmutableListUtilsTest{
         )
     }
 
+    /*
+    * Проверяем добавление пустого в списка
+    * Ожидаем в результирующем списке должны присутствовать элементы из списка с элементами
+    */
     @Test
     fun appendEmptyList() {
         val targetList = listOf(1,1,3,3,5,5)
@@ -52,6 +64,10 @@ class ImmutableListUtilsTest{
         )
     }
 
+    /*
+    * Проверяем добавление пустого в списка в пустой список
+    * Ожидаем результирующий список должен быть пустым
+    */
     @Test
     fun appendEmptyToEmptyList() {
         val resultList = listUtils.append(listOf(), listOf())
